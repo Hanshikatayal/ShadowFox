@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; padding-top: 50px; background: #f9f9f9; }
+        #container { width: 400px; }
+        textarea { width: 100%; height: 100px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        .suggestions { display: flex; gap: 10px; margin-bottom: 10px; }
+        .chip { background: #eee; padding: 5px 12px; border-radius: 15px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .chip:hover { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div class="suggestions" id="suggestion-box"></div>
+        <textarea id="input-field" placeholder="Start typing..."></textarea>
+    </div>
+
+    <script>
+        const inputField = document.getElementById('input-field');
+        const suggestionBox = document.getElementById('suggestion-box');
+
+        inputField.addEventListener('input', async (e) => {
+            const text = e.target.value;
+            if (text.split(' ').length < 2) return;
+
+            const response = await fetch('http://127.0.0.1:5000/get_suggestions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+            
+            const data = await response.json();
+            suggestionBox.innerHTML = ''; // Clear old ones
+            
+            data.suggestions.forEach(word => {
+                const span = document.createElement('span');
+                span.className = 'chip';
+                span.innerText = word;
+                span.onclick = () => { inputField.value += " " + word; };
+                suggestionBox.appendChild(span);
+            });
+        });
+    </script>
+</body>
+</html>
